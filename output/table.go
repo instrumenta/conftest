@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/open-policy-agent/opa/tester"
 )
 
 // Table represents an Outputter that outputs
@@ -54,5 +55,9 @@ func (t *Table) Output(checkResults []CheckResult) error {
 		table.Render()
 	}
 
+	return nil
+}
+
+func (t *Table) Report(results []*tester.Result) error {
 	return nil
 }
