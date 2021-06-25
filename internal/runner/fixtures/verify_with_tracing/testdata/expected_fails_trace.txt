@@ -1,0 +1,4 @@
+query:1                                       Enter data.main.test_deny_null_created = _
+fixtures/verify_with_tracing/main.rego:32     | Enter data.main.test_deny_null_created
+fixtures/verify_with_tracing/main.rego:33     | | Fail __local11__ = 0 with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+query:1                                       | Fail data.main.test_deny_null_created = _

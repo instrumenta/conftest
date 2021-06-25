@@ -1,0 +1,4 @@
+query:1                                       Enter data.main.test_deny_null_created = _
+fixtures/verify_with_tracing/main.rego:32     | Enter data.main.test_deny_null_created
+fixtures/verify_with_tracing/main.rego:24     | | Enter data.main.deny
+fixtures/verify_with_tracing/main.rego:26     | | | Note "Print statement"

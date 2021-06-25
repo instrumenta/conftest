@@ -1,0 +1,67 @@
+query:1                                       Enter data.main.test_deny_null_created = _
+query:1                                       | Eval data.main.test_deny_null_created = _
+query:1                                       | Index data.main.test_deny_null_created (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:32     | Enter data.main.test_deny_null_created
+fixtures/verify_with_tracing/main.rego:33     | | Eval __local12__ = data.main.deny[msg] with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:33     | | Index data.main.deny (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:24     | | Enter data.main.deny
+fixtures/verify_with_tracing/main.rego:25     | | | Eval num_resources = data.main.num_creates.null_resource
+fixtures/verify_with_tracing/main.rego:25     | | | Index data.main.num_creates (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:16     | | | Enter data.main.num_creates
+fixtures/verify_with_tracing/main.rego:18     | | | | Eval data.main.resource_types[resource_type]
+fixtures/verify_with_tracing/main.rego:18     | | | | Index data.main.resource_types (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:3      | | | | Enter data.main.resource_types
+fixtures/verify_with_tracing/main.rego:3      | | | | | Eval true
+fixtures/verify_with_tracing/main.rego:3      | | | | | Exit data.main.resource_types
+fixtures/verify_with_tracing/main.rego:19     | | | | Eval all = data.main.resources[resource_type]
+fixtures/verify_with_tracing/main.rego:19     | | | | Index data.main.resources (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:6      | | | | Enter data.main.resources
+fixtures/verify_with_tracing/main.rego:8      | | | | | Eval data.main.resource_types[resource_type]
+fixtures/verify_with_tracing/main.rego:8      | | | | | Index data.main.resource_types (matched 1 rule)
+fixtures/verify_with_tracing/main.rego:9      | | | | | Eval all = [name | name = input.resource_changes[_]; name.type = resource_type]
+fixtures/verify_with_tracing/main.rego:10     | | | | | Enter name = input.resource_changes[_]; name.type = resource_type
+fixtures/verify_with_tracing/main.rego:10     | | | | | | Eval name = input.resource_changes[_]
+fixtures/verify_with_tracing/main.rego:11     | | | | | | Eval name.type = resource_type
+fixtures/verify_with_tracing/main.rego:10     | | | | | | Exit name = input.resource_changes[_]; name.type = resource_type
+fixtures/verify_with_tracing/main.rego:10     | | | | | Redo name = input.resource_changes[_]; name.type = resource_type
+fixtures/verify_with_tracing/main.rego:11     | | | | | | Redo name.type = resource_type
+fixtures/verify_with_tracing/main.rego:10     | | | | | | Redo name = input.resource_changes[_]
+fixtures/verify_with_tracing/main.rego:6      | | | | | Exit data.main.resources
+fixtures/verify_with_tracing/main.rego:20     | | | | Eval creates = [res | res = all[_]; res.change.actions[_] = "create"]
+fixtures/verify_with_tracing/main.rego:20     | | | | Enter res = all[_]; res.change.actions[_] = "create"
+fixtures/verify_with_tracing/main.rego:20     | | | | | Eval res = all[_]
+fixtures/verify_with_tracing/main.rego:20     | | | | | Eval res.change.actions[_] = "create"
+fixtures/verify_with_tracing/main.rego:20     | | | | | Exit res = all[_]; res.change.actions[_] = "create"
+fixtures/verify_with_tracing/main.rego:20     | | | | Redo res = all[_]; res.change.actions[_] = "create"
+fixtures/verify_with_tracing/main.rego:20     | | | | | Redo res.change.actions[_] = "create"
+fixtures/verify_with_tracing/main.rego:20     | | | | | Redo res = all[_]
+fixtures/verify_with_tracing/main.rego:21     | | | | Eval count(creates, __local10__)
+fixtures/verify_with_tracing/main.rego:21     | | | | Eval num = __local10__
+fixtures/verify_with_tracing/main.rego:16     | | | | Exit data.main.num_creates
+fixtures/verify_with_tracing/main.rego:26     | | | Eval trace("Print statement")
+fixtures/verify_with_tracing/main.rego:26     | | | Note "Print statement"
+fixtures/verify_with_tracing/main.rego:27     | | | Eval gt(num_resources, 0)
+fixtures/verify_with_tracing/main.rego:29     | | | Eval msg = "null resources cannot be created"
+fixtures/verify_with_tracing/main.rego:24     | | | Exit data.main.deny
+fixtures/verify_with_tracing/main.rego:33     | | Eval count(__local12__, __local11__) with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:33     | | Eval __local11__ = 0 with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:33     | | Fail __local11__ = 0 with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:33     | | Redo count(__local12__, __local11__) with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:33     | | Redo __local12__ = data.main.deny[msg] with input as {"resource_changes": [{"change": {"actions": ["create"]}, "type": "null_resource"}]}
+fixtures/verify_with_tracing/main.rego:24     | | Redo data.main.deny
+fixtures/verify_with_tracing/main.rego:29     | | | Redo msg = "null resources cannot be created"
+fixtures/verify_with_tracing/main.rego:27     | | | Redo gt(num_resources, 0)
+fixtures/verify_with_tracing/main.rego:26     | | | Redo trace("Print statement")
+fixtures/verify_with_tracing/main.rego:25     | | | Redo num_resources = data.main.num_creates.null_resource
+fixtures/verify_with_tracing/main.rego:16     | | | Redo data.main.num_creates
+fixtures/verify_with_tracing/main.rego:21     | | | | Redo num = __local10__
+fixtures/verify_with_tracing/main.rego:21     | | | | Redo count(creates, __local10__)
+fixtures/verify_with_tracing/main.rego:20     | | | | Redo creates = [res | res = all[_]; res.change.actions[_] = "create"]
+fixtures/verify_with_tracing/main.rego:19     | | | | Redo all = data.main.resources[resource_type]
+fixtures/verify_with_tracing/main.rego:6      | | | | Redo data.main.resources
+fixtures/verify_with_tracing/main.rego:9      | | | | | Redo all = [name | name = input.resource_changes[_]; name.type = resource_type]
+fixtures/verify_with_tracing/main.rego:8      | | | | | Redo data.main.resource_types[resource_type]
+fixtures/verify_with_tracing/main.rego:18     | | | | Redo data.main.resource_types[resource_type]
+fixtures/verify_with_tracing/main.rego:3      | | | | Redo data.main.resource_types
+fixtures/verify_with_tracing/main.rego:3      | | | | | Redo true
+query:1                                       | Fail data.main.test_deny_null_created = _

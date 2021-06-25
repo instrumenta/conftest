@@ -21,7 +21,7 @@
 }
 
 @test "Fail when testing with no policies path" {
-  run ./conftest test -p internal/ examples/kubernetes/deployment.yaml
+  run ./conftest test -p tests/no-policies-folder/ examples/kubernetes/deployment.yaml
   [ "$status" -eq 1 ]
 }
 
@@ -84,7 +84,7 @@
 }
 
 @test "Fail when verifying with no policies path" {
-  run ./conftest verify -p internal/
+  run ./conftest verify -p tests/no-policies-folder/
   [ "$status" -eq 1 ]
 }
 

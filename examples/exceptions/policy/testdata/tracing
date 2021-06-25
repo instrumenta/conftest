@@ -1,0 +1,18 @@
+package main
+
+import data.deployments
+
+is_deployment {
+	input.kind = "Deployment"
+}
+
+deny_run_as_root[msg] {
+	is_deployment
+	not input.spec.template.spec.securityContext.runAsNonRoot
+
+	msg = sprintf("Containers must not run as root in Deployment %s", [input.metadata.name])
+}
+
+test_run_as_root {
+	deny_run_as_root["Containers must not run as root in Deployment cannot-run-as-root"] with input as {"kind": "Deployment", "metadata": {"name": "cannot-run-as-root"}, "spec": {"template": {"spec": {"securityContext": {"runAsNonRoot": true}}}}}
+}

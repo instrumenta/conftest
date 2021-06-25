@@ -10,16 +10,64 @@ import (
 	"github.com/open-policy-agent/conftest/policy"
 	"github.com/open-policy-agent/opa/tester"
 	"github.com/open-policy-agent/opa/topdown"
+	"github.com/open-policy-agent/opa/topdown/lineage"
 )
 
 // VerifyRunner is the runner for the Verify command, executing
 // Rego policy unit-tests.
 type VerifyRunner struct {
-	Policy  []string
-	Data    []string
-	Output  string
-	NoColor bool `mapstructure:"no-color"`
-	Trace   bool
+	Policy       []string
+	Data         []string
+	Output       string
+	NoColor      bool `mapstructure:"no-color"`
+	Trace        bool
+	ExplainQuery string `mapstructure:"explain"`
+}
+
+const (
+	ExplainQueryFull  = "full"
+	ExplainQueryNotes = "notes"
+	ExplainQueryFails = "fails"
+)
+
+func (r *VerifyRunner) isExplainSet() bool {
+	return r.ExplainQuery == ExplainQueryFails ||
+		r.ExplainQuery == ExplainQueryFull ||
+		r.ExplainQuery == ExplainQueryNotes
+
+}
+
+func (r *VerifyRunner) filterTrace(trace []*topdown.Event) []*topdown.Event {
+	ops := map[topdown.Op]struct{}{}
+
+	if r.ExplainQuery == ExplainQueryFull {
+		return trace
+	}
+
+	if !r.isExplainSet() && r.Trace {
+		return trace
+	}
+
+	// If an explain mode was specified, filter based
+	// on the mode. If no explain mode was specified,
+	// default to show both notes and fail events
+
+	if r.ExplainQuery == ExplainQueryNotes {
+		ops[topdown.NoteOp] = struct{}{}
+	}
+
+	if r.ExplainQuery == ExplainQueryFails {
+		ops[topdown.FailOp] = struct{}{}
+	}
+
+	return lineage.Filter(trace, func(event *topdown.Event) bool {
+		_, relevant := ops[event.Op]
+		return relevant
+	})
+}
+
+func (r *VerifyRunner) IsTraceEnabled() bool {
+	return r.Trace || r.isExplainSet()
 }
 
 // Run executes the Rego tests for the given policies.
@@ -29,11 +77,13 @@ func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, error) {
 		return nil, fmt.Errorf("load: %w", err)
 	}
 
-	if r.Trace {
-		engine.EnableTracing()
-	}
+	runner := tester.NewRunner().
+		SetCompiler(engine.Compiler()).
+		SetStore(engine.Store()).
+		SetModules(engine.Modules()).
+		EnableTracing(r.IsTraceEnabled()).
+		SetRuntime(engine.Runtime())
 
-	runner := tester.NewRunner().SetCompiler(engine.Compiler()).SetStore(engine.Store()).SetModules(engine.Modules()).EnableTracing(r.Trace).SetRuntime(engine.Runtime())
 	ch, err := runner.RunTests(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("running tests: %w", err)
@@ -45,9 +95,16 @@ func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, error) {
 			return nil, fmt.Errorf("run test: %w", result.Error)
 		}
 
-		buf := new(bytes.Buffer)
-		topdown.PrettyTrace(buf, result.Trace)
 		var traces []string
+		buf := new(bytes.Buffer)
+
+		// If explain flag is set only output trace for failed tests otherwise
+		// output trace for all tests
+		if result.Fail && r.isExplainSet() ||
+			r.Trace {
+			topdown.PrettyTraceWithLocation(buf, r.filterTrace(result.Trace))
+		}
+
 		for _, line := range strings.Split(buf.String(), "\n") {
 			if len(line) > 0 {
 				traces = append(traces, line)
@@ -55,6 +112,7 @@ func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, error) {
 		}
 
 		var outputResult output.Result
+
 		if result.Fail || result.Skip {
 			outputResult.Message = result.Package + "." + result.Name
 		}

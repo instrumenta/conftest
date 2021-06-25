@@ -108,3 +108,9 @@ TRAC | Exit data.main.deny = _
 TRAC Redo data.main.deny = _
 TRAC | Redo data.main.deny = _
 ```
+
+For more context specific debugging use `conftest verify` with `--explain {full|fails|notes}` flag. `--explain` will output the trace for failed rego tests.
+
+`full` - will produce the full trace output for failing tests. This acts the same as setting `--trace`.
+`fail` - will produce only trace of the failing rules in the failing tests
+`notes` - will produce only trace of the `trace(msg)` statements in the failing tests
