@@ -4,7 +4,7 @@ no_violations {
 	count(deny) == 0
 }
 
-test_no_missing_label {
+test_missing_required_label_fail {
 	input := {
 		"kind": "Deployment",
 		"metadata": {
