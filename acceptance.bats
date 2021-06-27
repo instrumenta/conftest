@@ -90,40 +90,40 @@
 
 @test "Verify command has report flag - no failures" {
     run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/success --report
-  [ "$status" -eq 0 ]
-  [[ "${lines[0]}" =~ "data.main.test_missing_label_fails: PASS" ]]
-  [[ "${lines[1]}" =~ "--------------------------------------------------------------------------------" ]]
-  [[ "${lines[2]}" =~ "PASS: 1/1" ]]
+    [ "$status" -eq 0 ]
+    [[ "${lines[0]}" =~ "data.main.test_missing_label_fails: PASS" ]]
+    [[ "${lines[1]}" =~ "--------------------------------------------------------------------------------" ]]
+    [[ "${lines[2]}" =~ "PASS: 1/1" ]]
 }
 
 @test "Verify command does not support report flag with table output" {
     run ./conftest verify --policy ./examples/report/policy --report -o table
-  [ "$status" -eq 1 ]
+    [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with tap output" {
     run ./conftest verify --policy ./examples/report/policy --report -o tap
-  [ "$status" -eq 1 ]
+    [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with junit output" {
     run ./conftest verify --policy ./examples/report/policy --report -o junit
-  [ "$status" -eq 1 ]
+    [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with json output" {
     run ./conftest verify --policy ./examples/report/policy --report -o json
-  [ "$status" -eq 1 ]
+    [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command has report flag - failure with report" {
     run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report
-  [ "$status" -eq 1 ]
-  [[ "$output" =~ "FAILURES" ]]
-  [[ "$output" =~ "data.main.test_no_missing_label: FAIL" ]]
-  [[ "$output" =~ "Fail input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
-  [[ "$output" =~ "SUMMARY" ]]
-  [[ "$output" =~ "FAIL: 1/1" ]]
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "FAILURES" ]]
+    [[ "$output" =~ "data.main.test_no_missing_label: FAIL" ]]
+    [[ "$output" =~ "Fail input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
+    [[ "$output" =~ "SUMMARY" ]]
+    [[ "$output" =~ "FAIL: 1/1" ]]
 }
 
 @test "Has help flag" {
