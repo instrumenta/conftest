@@ -49,5 +49,5 @@ func (j *JSON) Output(results []CheckResult) error {
 }
 
 func (j *JSON) Report(results []*tester.Result) error {
-	return nil
+	return fmt.Errorf("report is not supported in JSON output")
 }

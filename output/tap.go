@@ -89,5 +89,5 @@ func (t *TAP) Output(checkResults []CheckResult) error {
 }
 
 func (t *TAP) Report(results []*tester.Result) error {
-	return nil
+	return fmt.Errorf("report is not supported in TAP output")
 }

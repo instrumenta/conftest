@@ -85,8 +85,12 @@ func NewVerifyCommand(ctx context.Context) *cobra.Command {
 
 			outputter := output.Get(runner.Output, output.Options{NoColor: runner.NoColor, Tracing: runner.Trace, ShowSkipped: true})
 
-			// report currently available with stdout only
-			if runner.Report && runner.Output == output.OutputStandard {
+			if runner.Report {
+				// report currently available with stdout only
+				if runner.Output != output.OutputStandard {
+					return fmt.Errorf("report flag is supported with stdout only")
+				}
+
 				if err := outputter.Report(raw); err != nil {
 					return fmt.Errorf("report results: %w", err)
 				}

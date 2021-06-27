@@ -1,6 +1,7 @@
 package output
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/olekukonko/tablewriter"
@@ -59,5 +60,5 @@ func (t *Table) Output(checkResults []CheckResult) error {
 }
 
 func (t *Table) Report(results []*tester.Result) error {
-	return nil
+	return fmt.Errorf("report is not supported in table output")
 }

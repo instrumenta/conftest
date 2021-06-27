@@ -96,5 +96,5 @@ func getTestName(fileName string, namespace string, message string) string {
 }
 
 func (j *JUnit) Report(results []*tester.Result) error {
-	return nil
+	return fmt.Errorf("report is not supported in JUnit output")
 }
