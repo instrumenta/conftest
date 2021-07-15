@@ -165,7 +165,7 @@ func (s *Standard) outputTrace(results []CheckResult, colorizer aurora.Aurora) {
 }
 
 // outputs results as a report - similar to OPA test output
-func (s *Standard) Report(results []*tester.Result) error {
+func (s *Standard) Report(results []*tester.Result, flag string) error {
 	reporter := tester.PrettyReporter{
 		Verbose:     true,
 		Output:      os.Stdout,
@@ -176,7 +176,7 @@ func (s *Standard) Report(results []*tester.Result) error {
 	go func() {
 		defer close(dup)
 		for i := 0; i < len(results); i++ {
-			results[i].Trace = filterTrace(results[i].Trace)
+			results[i].Trace = filterTrace(results[i].Trace, flag)
 			dup <- results[i]
 		}
 	}()
@@ -188,9 +188,19 @@ func (s *Standard) Report(results []*tester.Result) error {
 }
 
 // Filter traces - returns only failed traces
-func filterTrace(trace []*topdown.Event) []*topdown.Event {
+func filterTrace(trace []*topdown.Event, flag string) []*topdown.Event {
+	if flag == "full" {
+		return trace
+	}
 	ops := map[topdown.Op]struct{}{}
-	ops[topdown.FailOp] = struct{}{}
+
+	if flag == "fails" {
+		ops[topdown.FailOp] = struct{}{}
+	}
+
+	if flag == "notes" {
+		ops[topdown.NoteOp] = struct{}{}
+	}
 
 	return lineage.Filter(trace, func(event *topdown.Event) bool {
 		_, relevant := ops[event.Op]

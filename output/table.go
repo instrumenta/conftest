@@ -59,6 +59,6 @@ func (t *Table) Output(checkResults []CheckResult) error {
 	return nil
 }
 
-func (t *Table) Report(results []*tester.Result) error {
+func (t *Table) Report(results []*tester.Result, flag string) error {
 	return fmt.Errorf("report is not supported in table output")
 }

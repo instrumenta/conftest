@@ -20,7 +20,20 @@ type VerifyRunner struct {
 	Output  string
 	NoColor bool `mapstructure:"no-color"`
 	Trace   bool
-	Report  bool
+	Report  string
+}
+
+const (
+	ReportFull  = "full"
+	ReportNotes = "notes"
+	ReportFails = "fails"
+)
+
+func (r *VerifyRunner) IsReportOptionOn() bool {
+	return r.Report == ReportFull ||
+		r.Report == ReportNotes ||
+		r.Report == ReportFails
+
 }
 
 // Run executes the Rego tests for the given policies.
@@ -31,7 +44,7 @@ func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, []*tester
 	}
 
 	// Traces should be enabled when Trace or Report options are on
-	enableTracing := r.Trace || r.Report // true
+	enableTracing := r.Trace || r.IsReportOptionOn()
 
 	if enableTracing {
 		engine.EnableTracing()

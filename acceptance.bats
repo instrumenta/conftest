@@ -89,7 +89,7 @@
 }
 
 @test "Verify command has report flag - no failures" {
-    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/success --report
+    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/success --report fails
     [ "$status" -eq 0 ]
     [[ "${lines[0]}" =~ "data.main.test_no_missing_label: PASS" ]]
     [[ "${lines[1]}" =~ "--------------------------------------------------------------------------------" ]]
@@ -116,12 +116,34 @@
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
-@test "Verify command has report flag - failure with report" {
-    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report
+@test "Verify command has report flag - failure with report = fails" {
+    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report fails
     [ "$status" -eq 1 ]
     [[ "$output" =~ "FAILURES" ]]
     [[ "$output" =~ "data.main.test_missing_required_label_fail: FAIL" ]]
     [[ "$output" =~ "Fail input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
+    [[ "$output" =~ "SUMMARY" ]]
+    [[ "$output" =~ "FAIL: 1/1" ]]
+}
+
+@test "Verify command has report flag - failure with report = notes" {
+    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report fails
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "FAILURES" ]]
+    [[ "$output" =~ "data.main.test_missing_required_label_fail: FAIL" ]]
+    [[ "$output" =~ " Note \"just testing notes flag\"]]
+    [[ "$output" =~ "SUMMARY" ]]
+    [[ "$output" =~ "FAIL: 1/1" ]]
+}
+
+@test "Verify command has report flag - failure with report = full" {
+    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report full
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "FAILURES" ]]
+    [[ "$output" =~ "data.main.test_missing_required_label_fail: FAIL" ]]
+    [[ "$output" =~ "Eval input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
+    [[ "$output" =~ "Fail input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
+    [[ "$output" =~ " Note \"just testing notes flag\"]]
     [[ "$output" =~ "SUMMARY" ]]
     [[ "$output" =~ "FAIL: 1/1" ]]
 }

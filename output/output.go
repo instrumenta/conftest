@@ -10,7 +10,7 @@ import (
 // be recorded and reported to the end user.
 type Outputter interface {
 	Output([]CheckResult) error
-	Report([]*tester.Result) error
+	Report([]*tester.Result, string) error
 }
 
 // Options represents the options available when configuring
