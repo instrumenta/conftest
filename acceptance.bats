@@ -97,22 +97,22 @@
 }
 
 @test "Verify command does not support report flag with table output" {
-    run ./conftest verify --policy ./examples/report/policy --report -o table
+    run ./conftest verify --policy ./examples/report/policy -o table --report fails
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with tap output" {
-    run ./conftest verify --policy ./examples/report/policy --report -o tap
+    run ./conftest verify --policy ./examples/report/policy -o tap --report fails
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with junit output" {
-    run ./conftest verify --policy ./examples/report/policy --report -o junit
+    run ./conftest verify --policy ./examples/report/policy -o junit --report fails
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
 @test "Verify command does not support report flag with json output" {
-    run ./conftest verify --policy ./examples/report/policy --report -o json
+    run ./conftest verify --policy ./examples/report/policy -o json --report fails
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
