@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydep
+spec:
+  template:
+    spec:
+      containers:
+        - name: web
+          image: nginx
+          ports:
+            - containerPort: 8080
+          securityContext:
+            runAsNonRoot: false
+        - name: host-agent
+          image: host-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: not-mydep
+spec:
+  template:
+    spec:
+      containers:
+        - name: web
+          image: nginx
+          ports:
+            - containerPort: 8080
+          securityContext:
+            runAsNonRoot: true
+        - name: host-agent
+          image: host-agent
+          securityContext:
+            runAsNonRoot: true

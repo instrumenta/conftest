@@ -77,6 +77,7 @@ type CheckResult struct {
 	Warnings   []Result      `json:"warnings,omitempty"`
 	Failures   []Result      `json:"failures,omitempty"`
 	Exceptions []Result      `json:"exceptions,omitempty"`
+	Excludes   []Result      `json:"excludes,omitempty"`
 	Queries    []QueryResult `json:"queries,omitempty"`
 }
 

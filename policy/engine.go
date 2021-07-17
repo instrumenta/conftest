@@ -3,6 +3,7 @@ package policy
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -137,6 +138,7 @@ func (e *Engine) Check(ctx context.Context, configs map[string]interface{}, name
 				checkResult.Failures = append(checkResult.Failures, result.Failures...)
 				checkResult.Warnings = append(checkResult.Warnings, result.Warnings...)
 				checkResult.Exceptions = append(checkResult.Exceptions, result.Exceptions...)
+				checkResult.Excludes = append(checkResult.Excludes, result.Excludes...)
 				checkResult.Queries = append(checkResult.Queries, result.Queries...)
 			}
 			checkResults = append(checkResults, checkResult)
@@ -233,6 +235,7 @@ func (e *Engine) Runtime() *ast.Term {
 func (e *Engine) check(ctx context.Context, path string, config interface{}, namespace string) (output.CheckResult, error) {
 	var rules []string
 	var ruleCount int
+
 	for _, module := range e.Modules() {
 		currentNamespace := strings.Replace(module.Package.Path.String(), "data.", "", 1)
 		if currentNamespace != namespace {
@@ -298,6 +301,7 @@ func (e *Engine) check(ctx context.Context, path string, config interface{}, nam
 
 		var failures []output.Result
 		var warnings []output.Result
+		var excludes []output.Result
 		for _, ruleResult := range ruleQueryResult.Results {
 
 			// Exceptions have already been accounted for in the exception query so
@@ -311,6 +315,30 @@ func (e *Engine) check(ctx context.Context, path string, config interface{}, nam
 				continue
 			}
 
+			result, err := json.Marshal(ruleResult.Metadata)
+			if err != nil {
+				return output.CheckResult{}, fmt.Errorf("json marshal: %w", err)
+			}
+
+			// If we have a non-null metadata response, then we are eligible to exclude the policy.
+			// Otherwise we can just skip & process the policy violation
+			if string(result) != "null" {
+				localExcludeQuery := fmt.Sprintf("data.%s.exclude_%s[_][_] = %s", namespace, removeRulePrefix(rule), result)
+				localExcludeQueryResult, err := e.query(ctx, config, localExcludeQuery)
+				if err != nil {
+					return output.CheckResult{}, fmt.Errorf("query exception: %w", err)
+				}
+
+				// If the query was a failure, let's have a look & see if an exception was written for it.
+				if len(localExcludeQueryResult.Results) > 0 {
+					// append an exception & continue
+					localExcludeResult := localExcludeQueryResult.Results[0]
+					localExcludeResult.Message = localExcludeQuery
+					excludes = append(excludes, localExcludeResult)
+					continue
+				}
+
+			}
 			if isFailure(rule) {
 				failures = append(failures, ruleResult)
 			} else {
@@ -321,6 +349,7 @@ func (e *Engine) check(ctx context.Context, path string, config interface{}, nam
 		checkResult.Failures = append(checkResult.Failures, failures...)
 		checkResult.Warnings = append(checkResult.Warnings, warnings...)
 		checkResult.Exceptions = append(checkResult.Exceptions, exceptions...)
+		checkResult.Excludes = append(checkResult.Excludes, excludes...)
 
 		checkResult.Queries = append(checkResult.Queries, exceptionQueryResult)
 		checkResult.Queries = append(checkResult.Queries, ruleQueryResult)
