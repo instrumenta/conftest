@@ -161,6 +161,7 @@ As of today Conftest supports the following output types:
 - [TAP](https://testanything.org/): `--output=tap`
 - Table `--output=table`
 - JUnit `--output=junit`
+- GitHub `--output=github`
 
 ### Plaintext
 
@@ -256,6 +257,43 @@ $ conftest test -p examples/kubernetes/policy examples/kubernetes/service.yaml -
                 </testcase>
                 <testcase classname="conftest" name="examples/kubernetes/deployment.yaml - " time="0.000"></testcase>
         </testsu
+```
+
+### GitHub
+
+```console
+$ conftest test -o github -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
+::group::Testing 'examples/kubernetes/deployment.yaml' against 5 policies in namespace 'main'
+::error file=examples/kubernetes/deployment.yaml::Containers must not run as root in Deployment hello-kubernetes
+::error file=examples/kubernetes/deployment.yaml::Deployment hello-kubernetes must provide app/release labels for pod selectors
+::error file=examples/kubernetes/deployment.yaml::hello-kubernetes must include Kubernetes recommended labels: https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
+::error file=examples/kubernetes/deployment.yaml::Found deployment hello-kubernetes but deployments are not allowed
+success file=examples/kubernetes/deployment.yaml 1
+::endgroup::
+5 tests, 1 passed, 0 warnings, 4 failures, 0 exceptions
+```
+
+Use Conftest directly to check incoming Pull Requests in GitHub:
+
+```yaml
+---
+name: Conftest
+
+on:
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  conftest:
+    runs-on: ubuntu-latest
+    container: openpolicyagent/conftest:latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+      - name: Validate Kubernetes policy
+        run: |
+          conftest test -o github -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
 ```
 
 ## `--parser`
