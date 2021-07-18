@@ -53,6 +53,11 @@ When debugging policies it can be useful to use a more verbose policy evaluation
 the output will include a detailed trace of how the policy was evaluated, e.g.
 
 	$ conftest verify --trace
+
+Use '--report' to get a report of the results with a summary. You can scope down to output full or notes or failed evaluation events {full|notes|fails}.
+	'full' - outputs all of the trace events
+	'notes' - outputs the trace events with 'trace(msg)' calls
+	'fails' - outputs the trace events of the failed queries
 `
 
 // NewVerifyCommand creates a new verify command which allows users
@@ -63,7 +68,7 @@ func NewVerifyCommand(ctx context.Context) *cobra.Command {
 		Short: "Verify Rego unit tests",
 		Long:  verifyDesc,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			flagNames := []string{"data", "no-color", "output", "policy", "trace"}
+			flagNames := []string{"data", "no-color", "output", "policy", "trace", "report"}
 			for _, name := range flagNames {
 				if err := viper.BindPFlag(name, cmd.Flags().Lookup(name)); err != nil {
 					return fmt.Errorf("bind flag: %w", err)
@@ -78,14 +83,26 @@ func NewVerifyCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("unmarshal parameters: %w", err)
 			}
 
-			results, err := runner.Run(ctx)
+			results, raw, err := runner.Run(ctx)
 			if err != nil {
 				return fmt.Errorf("running verification: %w", err)
 			}
 
 			outputter := output.Get(runner.Output, output.Options{NoColor: runner.NoColor, Tracing: runner.Trace, ShowSkipped: true})
-			if err := outputter.Output(results); err != nil {
-				return fmt.Errorf("output results: %w", err)
+
+			if runner.IsReportOptionOn() {
+				// report currently available with stdout only
+				if runner.Output != output.OutputStandard {
+					return fmt.Errorf("report flag is supported with stdout only")
+				}
+
+				if err := outputter.Report(raw, runner.Report); err != nil {
+					return fmt.Errorf("report results: %w", err)
+				}
+			} else {
+				if err := outputter.Output(results); err != nil {
+					return fmt.Errorf("output results: %w", err)
+				}
 			}
 
 			exitCode := output.ExitCode(results)
@@ -99,6 +116,7 @@ func NewVerifyCommand(ctx context.Context) *cobra.Command {
 
 	cmd.Flags().Bool("no-color", false, "Disable color when printing")
 	cmd.Flags().Bool("trace", false, "Enable more verbose trace output for Rego queries")
+	cmd.Flags().String("report", "", "Shows output for Rego queries as a report with summary. Available options are {full|notes|fails}.")
 
 	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", output.Outputs()))
 

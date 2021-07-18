@@ -8,6 +8,7 @@ import (
 
 	"github.com/jstemmer/go-junit-report/formatter"
 	"github.com/jstemmer/go-junit-report/parser"
+	"github.com/open-policy-agent/opa/tester"
 )
 
 // JUnit represents an Outputter that outputs
@@ -92,4 +93,8 @@ func getTestName(fileName string, namespace string, message string) string {
 	}
 
 	return fmt.Sprintf("%s - %s", fileName, namespace)
+}
+
+func (j *JUnit) Report(results []*tester.Result, flag string) error {
+	return fmt.Errorf("report is not supported in JUnit output")
 }

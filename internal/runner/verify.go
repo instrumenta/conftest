@@ -20,31 +20,50 @@ type VerifyRunner struct {
 	Output  string
 	NoColor bool `mapstructure:"no-color"`
 	Trace   bool
+	Report  string
+}
+
+const (
+	ReportFull  = "full"
+	ReportNotes = "notes"
+	ReportFails = "fails"
+)
+
+func (r *VerifyRunner) IsReportOptionOn() bool {
+	return r.Report == ReportFull ||
+		r.Report == ReportNotes ||
+		r.Report == ReportFails
+
 }
 
 // Run executes the Rego tests for the given policies.
-func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, error) {
+func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, []*tester.Result, error) {
 	engine, err := policy.LoadWithData(ctx, r.Policy, r.Data)
 	if err != nil {
-		return nil, fmt.Errorf("load: %w", err)
+		return nil, nil, fmt.Errorf("load: %w", err)
 	}
 
-	if r.Trace {
+	// Traces should be enabled when Trace or Report options are on
+	enableTracing := r.Trace || r.IsReportOptionOn()
+
+	if enableTracing {
 		engine.EnableTracing()
 	}
 
-	runner := tester.NewRunner().SetCompiler(engine.Compiler()).SetStore(engine.Store()).SetModules(engine.Modules()).EnableTracing(r.Trace).SetRuntime(engine.Runtime())
+	runner := tester.NewRunner().SetCompiler(engine.Compiler()).SetStore(engine.Store()).SetModules(engine.Modules()).EnableTracing(enableTracing).SetRuntime(engine.Runtime())
 	ch, err := runner.RunTests(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("running tests: %w", err)
+		return nil, nil, fmt.Errorf("running tests: %w", err)
 	}
 
 	var results []output.CheckResult
+	var rawResults []*tester.Result
 	for result := range ch {
 		if result.Error != nil {
-			return nil, fmt.Errorf("run test: %w", result.Error)
+			return nil, nil, fmt.Errorf("run test: %w", result.Error)
 		}
 
+		rawResults = append(rawResults, result)
 		buf := new(bytes.Buffer)
 		topdown.PrettyTrace(buf, result.Trace)
 		var traces []string
@@ -80,5 +99,5 @@ func (r *VerifyRunner) Run(ctx context.Context) ([]output.CheckResult, error) {
 		results = append(results, checkResult)
 	}
 
-	return results, nil
+	return results, rawResults, nil
 }
