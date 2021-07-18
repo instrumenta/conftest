@@ -116,7 +116,7 @@
     [[ "$output" =~ "Error: report flag is supported with stdout only" ]]
 }
 
-@test "Verify command has report flag - failure with report = fails" {
+@test "Verify command has report flag - failure with report fails" {
     run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report fails
     [ "$status" -eq 1 ]
     [[ "$output" =~ "FAILURES" ]]
@@ -126,24 +126,24 @@
     [[ "$output" =~ "FAIL: 1/1" ]]
 }
 
-@test "Verify command has report flag - failure with report = notes" {
-    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report fails
+@test "Verify command has report flag - failure with report notes" {
+    run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report notes
     [ "$status" -eq 1 ]
     [[ "$output" =~ "FAILURES" ]]
     [[ "$output" =~ "data.main.test_missing_required_label_fail: FAIL" ]]
-    [[ "$output" =~ " Note \"just testing notes flag\"]]
+    [[ "$output" =~ "Note \"just testing notes flag\"" ]]
     [[ "$output" =~ "SUMMARY" ]]
     [[ "$output" =~ "FAIL: 1/1" ]]
 }
 
-@test "Verify command has report flag - failure with report = full" {
+@test "Verify command has report flag - failure with report full" {
     run ./conftest verify --policy ./examples/report/policy --policy ./examples/report/fail --report full
     [ "$status" -eq 1 ]
     [[ "$output" =~ "FAILURES" ]]
     [[ "$output" =~ "data.main.test_missing_required_label_fail: FAIL" ]]
     [[ "$output" =~ "Eval input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
     [[ "$output" =~ "Fail input.metadata.labels[\"app.kubernetes.io/name\"]" ]]
-    [[ "$output" =~ " Note \"just testing notes flag\"]]
+    [[ "$output" =~ "Note \"just testing notes flag\"" ]]
     [[ "$output" =~ "SUMMARY" ]]
     [[ "$output" =~ "FAIL: 1/1" ]]
 }
